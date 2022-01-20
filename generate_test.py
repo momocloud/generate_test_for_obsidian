@@ -1,8 +1,5 @@
 import random
 import argparse
-from xmlrpc.client import boolean
-
-
 
 def detect_contain_chinese(strs):
     '''
