@@ -1,5 +1,7 @@
+import email
 import random
 import argparse
+
 
 def detect_contain_chinese(strs):
     '''
@@ -96,7 +98,9 @@ def write_lines(file_to_write_path, line_to_write_list, emphasis, mark):
         for line in line_to_write_list:
             if mark:
                 line = f'{"#" * emphasis} {index}. {line}'
-                index += 1
+            else:
+                line = f'{"#" * emphasis} {line}'
+            index += 1
             f.write(line)
 
 def main():
@@ -106,14 +110,15 @@ def main():
         type=str, required=False, default='word_note.md')
     parser.add_argument('-o', '--output', help='path of output, which should be the generated test name (markdown), default is word_test.md.', \
         type=str, required=False, default='word_test.md')
-    parser.add_argument('-s', '--shuffle', help='turn on shuffle, default is True.', type=bool, required=False, default=True)
     parser.add_argument('-e', '--emphasis', help='to set the one word into different level of level to emphasize, default is 3, 0 is to turn off.', \
         type=int, required=False, default=4)
-    parser.add_argument('-m', '--mark', help='to mark a number of each test, default is True.', type=bool, required=False, default=True)
-    parser.add_argument('-t', '--sort', help='sort the test, default is False. This will disable shuffle!', type=bool, required=False, default=False)
-    parser.add_argument('--exchinese', help='exclude items containing Chinese, default is False.', type=bool, required=False, default=False)
-    parser.add_argument('--exjapanese', help='exclude items containing Japanese, default is False.', type=bool, required=False, default=False)
-    parser.add_argument('--exenglish', help='exclude items which is *ALL* English, default is False.', type=bool, required=False, default=False)
+
+    parser.add_argument('-s', '--shuffle', help='turn on shuffle.', required=False, action='store_true')
+    parser.add_argument('-m', '--mark', help='to mark a number of each test.', required=False, action='store_true')
+    parser.add_argument('-t', '--sort', help='sort the test. This will disable shuffle!', required=False, action='store_true')
+    parser.add_argument('--exchinese', help='exclude items containing Chinese.', required=False, action='store_true')
+    parser.add_argument('--exjapanese', help='exclude items containing Japanese.', required=False, action='store_true')
+    parser.add_argument('--exenglish', help='exclude items which is *ALL* English.', required=False, action='store_true')
 
     args = parser.parse_args()
 
