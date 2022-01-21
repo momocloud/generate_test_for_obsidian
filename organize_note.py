@@ -78,7 +78,7 @@ def main():
     parser.add_argument('-s', '--shuffle', help='turn on shuffle.', required=False, action='store_true')
     parser.add_argument('-m', '--mark', help='to mark a number of each test.', required=False, action='store_true')
     parser.add_argument('-t', '--sort', help='sort the test. This will disable shuffle!', required=False, action='store_true')
-    parser.add_argument('--overwrite', help='overwrite the inpue file. This will disable output parameter!', required=False, action='store_true')
+    parser.add_argument('--overwrite', help='**WARNING** this will overwrite the original input file. This will disable output parameter!', required=False, action='store_true')
 
     args = parser.parse_args()
 
