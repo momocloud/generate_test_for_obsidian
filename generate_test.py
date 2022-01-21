@@ -1,4 +1,3 @@
-import email
 import random
 import argparse
 
