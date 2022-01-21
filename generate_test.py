@@ -109,7 +109,7 @@ def main():
         type=str, required=False, default='word_note.md')
     parser.add_argument('-o', '--output', help='path of output, which should be the generated test name (markdown), default is word_test.md.', \
         type=str, required=False, default='word_test.md')
-    parser.add_argument('-e', '--emphasis', help='to set the one word into different level of level to emphasize, default is 3, 0 is to turn off.', \
+    parser.add_argument('-e', '--emphasis', help='to set the one word into different level of level to emphasize, default is 4, 0 is to turn off.', \
         type=int, required=False, default=4)
 
     parser.add_argument('-s', '--shuffle', help='turn on shuffle.', required=False, action='store_true')
