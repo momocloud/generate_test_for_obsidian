@@ -28,7 +28,7 @@ def build_word_map(file_to_read_path):
                 
     return word_map
 
-def build_line_to_write_list(word_map, shuffle, to_sort, emphasis):
+def build_line_to_write_list(word_map, shuffle, to_sort, emphasis, mark):
     '''
     Builds a list of lines to write to the file from a word map built.
     '''
@@ -41,24 +41,27 @@ def build_line_to_write_list(word_map, shuffle, to_sort, emphasis):
     
     line_to_write_list = []
 
+    index = 1
     for title in title_list:
-        line_to_write_list.append(f'{"#"*emphasis} {title}\n')
+        if mark:
+            line_to_write_list.append(f'{"#"*emphasis} {index}. {title}\n')
+        else:
+            line_to_write_list.append(f'{"#"*emphasis} {title}\n')
+        index += 1
+            
         for text in word_map[title]:
             line_to_write_list.append(f'{text}\n')
 
     return line_to_write_list
 
-def write_lines(file_to_write_path, line_to_write_list, mark):
+def write_lines(file_to_write_path, line_to_write_list):
     '''
     Writes lines to a file opened.
     '''
     with open(file_to_write_path, 'w', encoding='utf-8') as f:
         index = 1
         for line in line_to_write_list:
-            if mark:
-                line = f'{index}. {line}'
-            else:
-                line = f'{line}'
+            line = f'{line}'
             index += 1
             f.write(line)
 
@@ -83,8 +86,8 @@ def main():
         args.output = args.input
     
     word_map = build_word_map(args.input)
-    line_to_write_list = build_line_to_write_list(word_map, args.shuffle, args.sort, args.emphasis)
-    write_lines(args.output, line_to_write_list, args.mark)
+    line_to_write_list = build_line_to_write_list(word_map, args.shuffle, args.sort, args.emphasis, args.mark)
+    write_lines(args.output, line_to_write_list)
 
 
 if __name__ == '__main__':
