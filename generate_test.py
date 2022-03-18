@@ -1,5 +1,14 @@
+from ast import parse
 import random
 import argparse
+
+
+def detect_if_selected(strs):
+    '''
+    Detect if the string is selected.
+    '''
+    strs = strs.strip()
+    return strs.startswith('==') and strs.endswith('==')
 
 
 def detect_contain_chinese(strs):
@@ -34,7 +43,7 @@ def detect_all_english(strs):
         return True
 
 
-def build_word_map(file_to_read_path):
+def build_word_map(file_to_read_path, scope):
     '''
     Builds a word map from a file path.
     '''
@@ -43,7 +52,7 @@ def build_word_map(file_to_read_path):
         slicing = False
         selected = True
         for line in f:
-            if '{' in line:
+            if '{' in line and scope:
                 if not slicing:
                     word_map = {}
                     slicing = True
@@ -53,9 +62,8 @@ def build_word_map(file_to_read_path):
                 word_map[word] = []
             if "|" in line and selected:
                 test_list = [test.strip().replace('-', word) if '-' in test.strip() else test.strip() for test in line.split('|') if len(test.strip()) > 0]
-                test_list
                 word_map[word].extend(test_list)
-            if '}' in line and slicing:
+            if '}' in line and slicing and scope:
                 selected = False
 
     for word, test_list in word_map.items():
@@ -65,7 +73,7 @@ def build_word_map(file_to_read_path):
     return word_map
 
 
-def build_line_to_write_list(file_to_read_path, word_map, shuffle, to_sort, exclude_chinese, exclude_japanese, exclude_english):
+def build_line_to_write_list(file_to_read_path, word_map, shuffle, to_sort, exclude_chinese, exclude_japanese, exclude_english, select):
     '''
     Builds a list of lines to write to the file from a word map built.
     '''
@@ -74,10 +82,15 @@ def build_line_to_write_list(file_to_read_path, word_map, shuffle, to_sort, excl
         for test in test_list:
             if (exclude_chinese and detect_contain_chinese(test)) or \
                 (exclude_japanese and detect_contain_japanese(test)) or \
-                (exclude_english and detect_all_english(test)):
+                (exclude_english and detect_all_english(test)) or \
+                (select and not detect_if_selected(test)):
                 continue
-
-            line_to_write = f'[[{file_to_read_path}#{word}|{test}]]\n'
+            if detect_if_selected(test):
+                word = '\\' + word[0] + '\\' + word[1:-2] + '\\' + word[-2] + '\\' + word[-1] 
+                test = test[2:-2]
+                line_to_write = f'==[[{file_to_read_path}#{word}|{test}]]==\n'
+            else:
+                line_to_write = f'[[{file_to_read_path}#{word}|{test}]]\n'
             line_to_write_list.append(line_to_write)
 
     if shuffle:
@@ -115,14 +128,16 @@ def main():
     parser.add_argument('-s', '--shuffle', help='turn on shuffle.', required=False, action='store_true')
     parser.add_argument('-m', '--mark', help='to mark a number of each test.', required=False, action='store_true')
     parser.add_argument('-t', '--sort', help='sort the test. This will disable shuffle!', required=False, action='store_true')
+    parser.add_argument('-p', '--scope', help='enable \{ items \} to set the scope of the test.', required=False, action='store_true')
+    parser.add_argument('-l', '--select', help='enable ==item== to select the test.', required=False, action='store_true')
     parser.add_argument('--exchinese', help='exclude items containing Chinese.', required=False, action='store_true')
     parser.add_argument('--exjapanese', help='exclude items containing Japanese.', required=False, action='store_true')
     parser.add_argument('--exenglish', help='exclude items which is *ALL* English.', required=False, action='store_true')
 
     args = parser.parse_args()
 
-    word_map = build_word_map(args.input)
-    line_to_write_list = build_line_to_write_list(args.input, word_map, args.shuffle, args.sort, args.exchinese, args.exjapanese, args.exenglish)
+    word_map = build_word_map(args.input, args.scope)
+    line_to_write_list = build_line_to_write_list(args.input, word_map, args.shuffle, args.sort, args.exchinese, args.exjapanese, args.exenglish, args.select)
     write_lines(args.output, line_to_write_list, args.emphasis, args.mark)
 
 
