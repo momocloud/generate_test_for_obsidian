@@ -5,4 +5,4 @@ A script for quickly generating a test form from word notes in Obsidian.
 
 ## 原理
 
-利用了Obsidian的链接功能，根据朋友的需求写的。
+利用了Obsidian的链接功能。
