@@ -21,7 +21,7 @@ def build_word_map(file_to_read_path):
                 recording_word = None
                 selected = False
 
-            if '#' in line and selected:
+            if '# ' in line and selected:
                 recording_word = line[line.rfind('#')+1:].strip().strip('{').strip('}')
             elif recording_word is not None and selected:
                 word_map.setdefault(recording_word, []).append(line.strip().strip('{').strip('}'))

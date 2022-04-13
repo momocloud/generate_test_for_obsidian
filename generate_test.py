@@ -57,7 +57,7 @@ def build_word_map(file_to_read_path, scope):
                     word_map = {}
                     slicing = True
                 selected = True
-            if '#' in line and selected:
+            if '# ' in line and selected:
                 word = line[line.rfind('#')+1:].strip()
                 word_map[word] = []
             if "|" in line and selected:
