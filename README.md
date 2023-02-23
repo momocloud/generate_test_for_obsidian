@@ -6,3 +6,6 @@ A script for quickly generating a test form from word notes in Obsidian.
 ## 原理
 
 利用了Obsidian的链接功能。
+
+## 计划
+使用AHK2重构。
