@@ -15,7 +15,7 @@ def detect_contain_chinese(strs):
     Detect if a string contains chinese.
     '''
     for ch in strs:
-        if '\u4e00' <= ch <= '\u9fff':
+        if '\u4e00' <= ch <= '\u9fa5':
             return True
     return False
 
@@ -25,7 +25,7 @@ def detect_contain_japanese(strs):
     Detect if a string contains japanese.
     '''
     for ch in strs:
-        if '\u3040' <= ch <= '\u30ff':
+        if '\u30a0' <= ch <= '\u30ff' or '\u3040'<= ch <= '\u309f':
             return True
     return False
 
