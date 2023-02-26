@@ -266,6 +266,10 @@ BuildLineToWriteList(pFileToReadPath, pWordMap) {
 
 
 WriteLines(pFileToWritePath, pLineToWriteList) {
+/*!
+    Function: WriteLines
+    Parameters: pFileToWritePath - the note file path to write; pLineToWriteList - the word list generated before
+*/
     lineStart := ""
     Loop gEmphasis {
         lineStart := lineStart . "#"
