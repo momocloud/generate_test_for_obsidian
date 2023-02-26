@@ -1,4 +1,5 @@
 #Requires AutoHotkey v2.0
+; Author: momocloud
 
 
 FileEncoding "UTF-8"
@@ -292,7 +293,26 @@ WriteLines(pFileToWritePath, pLineToWriteList) {
 }
 
 
-#f1:: {
+ReadConfigFile() {
+/*!
+    Function: ReadConfigFile
+    Remarks: Read config file into global values
+*/
+    global gScope := IniRead(gConfigPath, "ReadConfig", "gScope", true)
+    global gSelect := IniRead(gConfigPath, "ReadConfig", "gSelect", false)
+
+    global gShuffle := IniRead(gConfigPath, "ShowConfig", "gShuffle", false)
+    global gSort := IniRead(gConfigPath, "ShowConfig", "gSort", false)
+    global gEmphasis := IniRead(gConfigPath, "ShowConfig", "gEmphasis", 4)
+    global gMark := IniRead(gConfigPath, "ShowConfig", "gMark", true)
+
+    global gExChinese := IniRead(gConfigPath, "LangConfig", "gExChinese", false)
+    global gExJapanese := IniRead(gConfigPath, "LangConfig", "gExJapanese", false)
+    global gExEnglish := IniRead(gConfigPath, "LangConfig", "gExEnglish", false)
+}
+
+
+#f1::{
     GetSelectedFilesPath()
     GenWriteFilesPath()
 
@@ -303,10 +323,10 @@ WriteLines(pFileToWritePath, pLineToWriteList) {
         if FileExist(fileToWritePath) {
             fileExistResult := MsgBox(Format("
                 (LTrim
-                    检测到文件
+                    检测到待生成文件
                     {1} 
                     已经存在，是否重写该文件？
-                    Yes 将会重写原文件；No 将会在原文件后追加内容；Cancel 将会跳过该文件的处理
+                    Yes 将重写原文件；No 将在原文件后追加内容；Cancel 将跳过该文件的处理
                 )", fileToWritePath), "WARN: FILE EXISTED", "Y/N/C")
             
             if fileExistResult = "Yes" {
@@ -324,29 +344,93 @@ WriteLines(pFileToWritePath, pLineToWriteList) {
 
 
 #f2::{
+    MsgBox("感谢使用！下次再来哦~ (*^▽^*)", "BYE~")
     ExitApp()
 }
 
 
+#f3::{
+    configSetter := Gui(, "INI Config Generator")
+    configSetter.SetFont("S10")
+    configSetter.Add("Text","x60 y26 w355 h38 +Center +", "欢迎使用配置文件生成器！`n可在脚本运行中使用Win F3重新打开此页面~")
+
+    configSetter.Add("Text", "x21 y93 w316 h19 +Center +", "是否开启选定范围生成（使用{}来控制范围）")
+    scope := configSetter.Add("Checkbox", "vscope x348 y93 w67 h19 Checked1", "建议是")
+
+    configSetter.Add("Text", "x21 y132 w316 h19 +Center +", "是否开启仅限重点词生成（使用====来控制范围）")
+    select := configSetter.Add("Checkbox", "vselect x348 y132 w67 h19 Checked0", "建议否")
+
+    configSetter.Add("Text", "x21 y170 w316 h19 +Center +", "是否开启随机顺序生成")
+    shuffle := configSetter.Add("Checkbox", "vshuffle x348 y170 w67 h19 Checked1", "建议是")
+
+    configSetter.Add("Text", "x21 y208 w316 h19 +Center +", "是否进行排序（这将强制关闭随机顺序生成！）")
+    sort_ := configSetter.Add("Checkbox", "vsort_ x348 y208 w67 h19 Checked0", "建议否")
+
+    configSetter.Add("Text", "x21 y266 w316 h19 +Center +", "生成的标题级别（推荐为4，0则禁用标题）")
+    emphasis := configSetter.Add("ListBox", "vemphasis x348 y237 w67 h80 Choose5", [0, 1, 2, 3, 4])
+
+    configSetter.Add("Text", "x21 y314 w316 h19 +Center +", "是否生成标号")
+    mark := configSetter.Add("Checkbox", "vmark x348 y314 w76 h19 Checked1", "建议是")
+
+    configSetter.Add("Text", "x21 y362 w316 h19 +Center +", "是否排除含有中文项")
+    exChinese := configSetter.Add("Checkbox", "vexChinese x348 y362 w86 h19 Checked0", "建议否")
+
+    configSetter.Add("Text", "x21 y400 w316 h19 +Center +", "是否排除日文项（假名）")
+    exJapanese := configSetter.Add("Checkbox", "vexJapanese x348 y400 w96 h19 Checked0", "建议否")
+
+    configSetter.Add("Text", "x21 y439 w316 h19 +Center +", "是否**全**英文项")
+    exEnglish := configSetter.Add("Checkbox", "vexEnglish x348 y439 w96 h19 Checked0", "建议否")
+
+    finishButton := configSetter.Add("Button", "x190 y477 w96 h30", "完成")
+    finishButton.OnEvent("Click", finishButton_Click)
+
+    configSetter.Show("w476 h530")
+    configSetter.OnEvent("Close", configSetter_Close)
+
+    finishButton_Click(thisButton, info) {
+        if not configSetter_Close(configSetter) {
+            configSetter.Destroy()
+        }
+    }
+
+    configSetter_Close(thisGui) {
+        if MsgBox("是否保存配置?", "WARN: CONFIG CONFIRM", "y/n") = "No" {
+            return true
+        } else {
+            writeConfigFile()
+            ReadConfigFile()
+            return false
+        }
+    }
+
+    writeConfigFile() {
+        if FileExist(gConfigPath) {
+            FileDelete(gConfigPath)
+        }
+        IniWrite(scope.Value, gConfigPath, "ReadConfig", "gScope")
+        IniWrite(select.Value, gConfigPath, "ReadConfig", "gSelect")
+        IniWrite(shuffle.Value, gConfigPath, "ReadConfig", "gShuffle")
+        IniWrite(sort_.Value, gConfigPath, "ShowConfig", "gSort")
+        IniWrite(emphasis.Value-1, gConfigPath, "ShowConfig", "gEmphasis")
+        IniWrite(mark.Value, gConfigPath, "ShowConfig", "gMark")
+        IniWrite(exChinese.Value, gConfigPath, "LangConfig", "gExChinese")
+        IniWrite(exJapanese.Value, gConfigPath, "LangConfig", "gExJapanese")
+        IniWrite(exEnglish.Value, gConfigPath, "LangConfig", "gExEnglish")
+    }
+
+}
+
+
 ScriptOpen() {
-    if FileExist(gConfigPath) {
-        global gScope := IniRead(gConfigPath, "ReadConfig", "gScope", true)
-        global gSelect := IniRead(gConfigPath, "ReadConfig", "gSelect", false)
-
-        global gShuffle := IniRead(gConfigPath, "ShowConfig", "gShuffle", false)
-        global gSort := IniRead(gConfigPath, "ShowConfig", "gSort", false)
-        global gEmphasis := IniRead(gConfigPath, "ShowConfig", "gEmphasis", 4)
-        global gMark := IniRead(gConfigPath, "ShowConfig", "gMark", true)
-
-        global gExChinese := IniRead(gConfigPath, "LangConfig", "gExChinese", false)
-        global gExJapanese := IniRead(gConfigPath, "LangConfig", "gExJapanese", false)
-        global gExEnglish := IniRead(gConfigPath, "LangConfig", "gExEnglish", false)
-    } else {
+    if not FileExist(gConfigPath) {
         MsgBox("
                 (LTrim
                 未检测到配置文件！即将打开配置文件创建窗口。
                 )", "WARN: INI NOT FOUND")
+        Send("#{f3}")
     }
+
+    readConfigFile()
 }
 
 
