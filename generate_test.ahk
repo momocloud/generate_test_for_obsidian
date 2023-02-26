@@ -3,17 +3,20 @@
 
 FileEncoding "UTF-8"
 
+RegExMatch(A_ScriptFullPath, "[^\\].*(?=\.)", &match)
+global gConfigPath := match[] . ".ini"
+
 global gFilePaths := Array.Call()
 global gFileToWritePath := Array.Call()
 global gScope := true
 global gShuffle := false
 global gSort := false
-global gExChinese := false
-global gExJapanese := false
-global gExEnglish := false
 global gSelect := false
 global gEmphasis := 4
 global gMark := true
+global gExChinese := false
+global gExJapanese := false
+global gExEnglish := false
 
 
 ArrayHasElem(pArr, pElem) {
@@ -289,7 +292,6 @@ WriteLines(pFileToWritePath, pLineToWriteList) {
 }
 
 
-
 #f1:: {
     GetSelectedFilesPath()
     GenWriteFilesPath()
@@ -305,7 +307,7 @@ WriteLines(pFileToWritePath, pLineToWriteList) {
                     {1} 
                     已经存在，是否重写该文件？
                     Yes 将会重写原文件；No 将会在原文件后追加内容；Cancel 将会跳过该文件的处理
-                )", fileToWritePath),, "Y/N/C")
+                )", fileToWritePath), "WARN: FILE EXISTED", "Y/N/C")
             
             if fileExistResult = "Yes" {
                 FileDelete(fileToWritePath)
@@ -324,3 +326,28 @@ WriteLines(pFileToWritePath, pLineToWriteList) {
 #f2::{
     ExitApp()
 }
+
+
+ScriptOpen() {
+    if FileExist(gConfigPath) {
+        global gScope := IniRead(gConfigPath, "ReadConfig", "gScope", true)
+        global gSelect := IniRead(gConfigPath, "ReadConfig", "gSelect", false)
+
+        global gShuffle := IniRead(gConfigPath, "ShowConfig", "gShuffle", false)
+        global gSort := IniRead(gConfigPath, "ShowConfig", "gSort", false)
+        global gEmphasis := IniRead(gConfigPath, "ShowConfig", "gEmphasis", 4)
+        global gMark := IniRead(gConfigPath, "ShowConfig", "gMark", true)
+
+        global gExChinese := IniRead(gConfigPath, "LangConfig", "gExChinese", false)
+        global gExJapanese := IniRead(gConfigPath, "LangConfig", "gExJapanese", false)
+        global gExEnglish := IniRead(gConfigPath, "LangConfig", "gExEnglish", false)
+    } else {
+        MsgBox("
+                (LTrim
+                未检测到配置文件！即将打开配置文件创建窗口。
+                )", "WARN: INI NOT FOUND")
+    }
+}
+
+
+ScriptOpen()
