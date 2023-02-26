@@ -4,6 +4,7 @@
 FileEncoding "UTF-8"
 
 global gFilePaths := Array.Call()
+global gFileToWritePath := Array.Call()
 global gScope := true
 global gShuffle := false
 global gSort := false
@@ -11,6 +12,8 @@ global gExChinese := false
 global gExJapanese := false
 global gExEnglish := false
 global gSelect := false
+global gEmphasis := 4
+global gMark := true
 
 
 ArrayHasElem(pArr, pElem) {
@@ -57,11 +60,11 @@ SortArray(pArr) {
     assNum := Map.Call()
     resArr := Array.Call()
 
-    For k, v in pArr {
+    for k, v in pArr {
         assNum[v] := k
     }
 
-    For k, v in assNum {
+    for k, _ in assNum {
         resArr.Push(k)
     }
 
@@ -153,6 +156,23 @@ GetSelectedFilesPath() {
 }
 
 
+GenWriteFilesPath() {
+/*!
+    Function: GenWriteFilesPath
+    Remarks: Use [gFilePaths] to generarte the file path to write,
+             and then stored into the global value [gFileToWritePath]
+*/
+    if gFilePaths.Length = 0 {
+        return
+    }
+    for _, filePath in gFilePaths {
+        RegExMatch(filePath, "[^\\].*?(?=\.)", &match)
+        fileToWritePath := String(match[] . "_gentest.md")
+        gFileToWritePath.Push(fileToWritePath)
+    }
+}
+
+
 BuildWordMap(pFileToReadPath) {
 /*!
     Function: BuildWordMap
@@ -217,15 +237,17 @@ BuildLineToWriteList(pFileToReadPath, pWordMap) {
                 (gSelect and not DetectIfSelected(test)) {
                     continue
                 }
+            RegExMatch(pFileToReadPath, "[^\\]+$", &match)
+            matchFileName := String(match[])
             if DetectIfSelected(test) {
                 word := "\" . SubStr(test, 1, 1) . 
                         "\" . SubStr(test, 2, StrLen(test)-3) . 
                         "\" . SubStr(test, -2, 1) . 
                         "\" . SubStr(test, -1, 1)
                 test := SubStr(test, 3, StrLen(test)-4)
-                lineToWrite := "==[[" pFileToReadPath "#" word "|" test "]]==`n"
+                lineToWrite := "==[[" matchFileName "#" word "|" test "]]==`n"
             } else {
-                lineToWrite := "[[" pFileToReadPath "#" word "|" test "]]`n"
+                lineToWrite := "[[" matchFileName "#" word "|" test "]]`n"
             }
             lineToWriteList.Push(lineToWrite)
         }
@@ -243,55 +265,58 @@ BuildLineToWriteList(pFileToReadPath, pWordMap) {
 }
 
 
+WriteLines(pFileToWritePath, pLineToWriteList) {
+    lineStart := ""
+    Loop gEmphasis {
+        lineStart := lineStart . "#"
+    }
+    if gEmphasis > 0 {
+        lineStart := lineStart . " "
+    }
+
+    for index, line in pLineToWriteList {
+        if gMark {
+            line := lineStart . index . ". " . line
+        } else {
+            line := lineStart . line
+        }
+        FileAppend(line, pFileToWritePath)
+    }
+}
 
 
 
+#f1:: {
+    GetSelectedFilesPath()
+    GenWriteFilesPath()
 
-^1:: {
-    ; str_test_1 := "你好ぁ！"
-    ; str_test_2 := "Thank you!"
-    ; MsgBox(DetectContainChinese(str_test_1))
-    ; MsgBox(DetectContainJapanese(str_test_1))
-    ; MsgBox(DetectAllEnglish(str_test_1))
-    ; MsgBox(DetectAllEnglish(str_test_2))
+    Loop gFilePaths.Length {
+        filePath := gFilePaths[A_Index]
+        fileToWritePath := gFileToWritePath[A_Index]
 
-    ; GetSelectedFilesPath()
-    
-    ; for filepath in gfilePaths {
-    ;     MsgBox(filepath)
-    ; }
+        if FileExist(fileToWritePath) {
+            fileExistResult := MsgBox(Format("
+                (LTrim
+                    检测到文件
+                    {1} 
+                    已经存在，是否重写该文件？
+                    Yes 将会重写原文件；No 将会在原文件后追加内容；Cancel 将会跳过该文件的处理
+                )", fileToWritePath),, "Y/N/C")
+            
+            if fileExistResult = "Yes" {
+                FileDelete(fileToWritePath)
+            } else if fileExistResult = "Cancel" {
+                continue
+            }
+        }
 
-    ; for filepath in gfilePaths {
-    ;     MsgBox(filepath)
-    ;     for word, arr in BuildWordMap(filepath) {
-    ;         MsgBox(word)
-    ;         for elem in arr {
-    ;             MsgBox(elem)
-    ;         }
-    ;     }
-    ;     MsgBox("=====")
-    ; }
-
-    ; testArr := [1, 3, 2, 4, 5]
-    ; testArr := ShuffleArray(testArr)
-    ; loop testArr.Length {
-    ;     MsgBox(testArr[A_Index])
-    ; }
-    ; testStr := "Heliolo!"
-    ; MsgBox("\" SubStr(testStr, 1, 1) 
-    ;         "\" SubStr(testStr, 2, StrLen(testStr)-3) 
-    ;         "\" SubStr(testStr, -2, 1)
-    ;         "\" SubStr(testStr, -1, 1))
-    ; MsgBox(SubStr(testStr, 3, StrLen(testStr)-4))
-    ; MsgBox("==[[" testStr "#" testStr "|" testStr "]]`n")
-
-    ; testArr := ["==abc", "==cba", "==bac"]
-    ; testArr := SortArray(testArr)
-
-    ; for k, v in testArr {
-    ;     MsgBox(v)
-    ; }
+        wordMap := BuildWordMap(filePath)
+        lineToWriteList := BuildLineToWriteList(filePath, wordMap)
+        WriteLines(fileToWritePath, lineToWriteList)
+    }
+}
 
 
+#f2::{
     ExitApp()
 }
