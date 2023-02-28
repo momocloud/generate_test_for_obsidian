@@ -169,6 +169,8 @@ GenWriteFilesPath() {
     if gFilePaths.Length = 0 {
         return
     }
+
+    global gFileToWritePath := Array.Call()
     for _, filePath in gFilePaths {
         RegExMatch(filePath, "[^\\].*?(?=\.)", &match)
         fileToWritePath := String(match[] . "_gentest.md")
