@@ -25,11 +25,11 @@ A script for quickly generating a test form from word notes in Obsidian.
 
 ![](./images/test_generate.gif)
 
-脚本开启状态下，使用**Win**和**F2关闭脚本，或在任务栏图标上右键关闭脚本。
+脚本开启状态下，使用**Win**和**F2**关闭脚本，或在任务栏图标上右键关闭脚本。
 
 ![](./images/test_exit.gif)
 
-脚本开启状态下，使用Win+F3重新打开配置文件窗口修改配置文件。
+脚本开启状态下，使用**Win**和**F3**重新打开配置文件窗口修改配置文件。
 
 ![](./images/test_config.gif)
 
